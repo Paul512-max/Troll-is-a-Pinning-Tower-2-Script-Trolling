@@ -1,0 +1,83 @@
+-- GUI Setup
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.ResetOnSpawn = false
+
+-- Draggable Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 100)
+frame.Position = UDim2.new(0.5, -110, 0.5, -50) -- Centered on screen
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 12)
+
+-- Info Label on top
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, -10, 0, 20)
+infoLabel.Position = UDim2.new(0, 5, 0, 5)
+infoLabel.BackgroundTransparency = 1
+infoLabel.Text = "(⚠️Only Works in Troll is a Pinning Tower 2!!⚠️)"
+infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoLabel.TextSize = 11
+infoLabel.Font = Enum.Font.SourceSansBold
+infoLabel.TextWrapped = true
+infoLabel.TextXAlignment = Enum.TextXAlignment.Center
+infoLabel.Parent = frame
+
+-- Button inside Frame
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -20, 0, 40)
+button.Position = UDim2.new(0, 10, 0, 30)
+button.Text = "Loop Touch: Off"
+button.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 18
+button.Parent = frame
+
+local btnCorner = Instance.new("UICorner", button)
+btnCorner.CornerRadius = UDim.new(0, 10)
+
+-- Touch Simulation Function
+local function touchPartAsync(part)
+	local character = player.Character
+	if not character then return end
+
+	for _, bodyPart in ipairs(character:GetDescendants()) do
+		if bodyPart:IsA("BasePart") then
+			task.spawn(function()
+				firetouchinterest(bodyPart, part, 0)
+				task.wait(0.1)
+				firetouchinterest(bodyPart, part, 1)
+			end)
+		end
+	end
+end
+
+-- Loop Touch Logic
+local loopTouching = false
+button.MouseButton1Click:Connect(function()
+	loopTouching = not loopTouching
+
+	if loopTouching then
+		button.Text = "Loop Touch: On"
+		button.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+	else
+		button.Text = "Loop Touch: Off"
+		button.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+	end
+
+	while loopTouching do
+		for _, part in ipairs(workspace:GetDescendants()) do
+			if part:IsA("BasePart") and (part.Name == "사라지는 파트" or part.Name == "Gudock") then
+				touchPartAsync(part)
+			end
+		end
+		task.wait(1)
+	end
+end)
