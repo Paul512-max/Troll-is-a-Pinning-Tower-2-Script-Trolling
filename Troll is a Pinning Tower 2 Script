@@ -7,8 +7,8 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Draggable Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 170)
-frame.Position = UDim2.new(0.5, -110, 0.5, -85)
+frame.Size = UDim2.new(0, 220, 0, 220)
+frame.Position = UDim2.new(0.5, -110, 0.5, -110)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -16,7 +16,7 @@ frame.Draggable = true
 frame.Parent = screenGui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
--- Toggle Button (attached outside frame, close above)
+-- Toggle Button (above frame)
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 30)
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -43,7 +43,7 @@ infoLabel.Parent = frame
 -- Loop Touch Button
 local loopButton = Instance.new("TextButton")
 loopButton.Size = UDim2.new(1, -20, 0, 35)
-loopButton.Position = UDim2.new(0, 10, 0, 35)
+loopButton.Position = UDim2.new(0, 10, 0, 30)
 loopButton.Text = "Loop Touch: Off"
 loopButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 loopButton.TextColor3 = Color3.new(1, 1, 1)
@@ -52,10 +52,10 @@ loopButton.TextSize = 18
 loopButton.Parent = frame
 Instance.new("UICorner", loopButton).CornerRadius = UDim.new(0, 10)
 
--- Walk On Air Button
+-- Walk on Air Button
 local airButton = Instance.new("TextButton")
 airButton.Size = UDim2.new(1, -20, 0, 35)
-airButton.Position = UDim2.new(0, 10, 0, 80)
+airButton.Position = UDim2.new(0, 10, 0, 75)
 airButton.Text = "WalkOnAir: Off"
 airButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 airButton.TextColor3 = Color3.new(1, 1, 1)
@@ -63,6 +63,18 @@ airButton.Font = Enum.Font.SourceSansBold
 airButton.TextSize = 18
 airButton.Parent = frame
 Instance.new("UICorner", airButton).CornerRadius = UDim.new(0, 10)
+
+-- Touch Tool Button (Red initially)
+local toolButton = Instance.new("TextButton")
+toolButton.Size = UDim2.new(1, -20, 0, 35)
+toolButton.Position = UDim2.new(0, 10, 0, 120)
+toolButton.Text = "Get Fire Part Tool"
+toolButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+toolButton.TextColor3 = Color3.new(1, 1, 1)
+toolButton.Font = Enum.Font.SourceSansBold
+toolButton.TextSize = 18
+toolButton.Parent = frame
+Instance.new("UICorner", toolButton).CornerRadius = UDim.new(0, 10)
 
 -- Touch Simulation Function
 local function touchPartAsync(part)
@@ -93,7 +105,7 @@ loopButton.MouseButton1Click:Connect(function()
 
 	while loopTouching do
 		for _, part in ipairs(workspace:GetDescendants()) do
-			if part:IsA("BasePart") and (part.Name == "사라지는 파트" or part.Name == "Gudock") then
+			if part:IsA("BasePart") and (part.Name == "사라지는 파트" or part.Name == "Gudock" or part.Name == "Part") then
 				touchPartAsync(part)
 			end
 		end
@@ -119,7 +131,7 @@ airButton.MouseButton1Click:Connect(function()
 	else
 		airButton.Text = "WalkOnAir: Off"
 		airButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-		airPart.Position = Vector3.new(0, -500, 0) -- Hide below map
+		airPart.Position = Vector3.new(0, -500, 0)
 	end
 end)
 
@@ -127,6 +139,37 @@ game:GetService("RunService").RenderStepped:Connect(function()
 	if walkOnAir and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 		local hrp = player.Character.HumanoidRootPart
 		airPart.Position = (hrp.Position - Vector3.new(0, 3.5, 0))
+	end
+end)
+
+-- Tool logic (give/remove + color effect)
+toolButton.MouseButton1Click:Connect(function()
+	-- Button click color effect
+	toolButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+	task.delay(0.1, function()
+		if toolButton then
+			toolButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+		end
+	end)
+
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	local existingTool = backpack and backpack:FindFirstChild("Fire Part")
+
+	if existingTool then
+		existingTool:Destroy()
+	else
+		local tool = Instance.new("Tool")
+		tool.RequiresHandle = false
+		tool.Name = "Fire Part"
+		tool.Parent = backpack
+
+		tool.Activated:Connect(function()
+			local mouse = player:GetMouse()
+			local target = mouse.Target
+			if target then
+				touchPartAsync(target)
+			end
+		end)
 	end
 end)
 
@@ -147,7 +190,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	toggleButton.Text = shown and "Hide GUI" or "Show GUI"
 end)
 
--- FOLLOW the Frame Always (REAL TIME)
+-- FOLLOW the Frame Always
 game:GetService("RunService").RenderStepped:Connect(function()
 	local framePosition = frame.Position
 	local frameSize = frame.Size
