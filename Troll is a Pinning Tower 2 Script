@@ -16,7 +16,7 @@ frame.Draggable = true
 frame.Parent = screenGui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
--- Toggle Button (above frame)
+-- Toggle Button (outside the frame, close above)
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 30)
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -64,7 +64,7 @@ airButton.TextSize = 18
 airButton.Parent = frame
 Instance.new("UICorner", airButton).CornerRadius = UDim.new(0, 10)
 
--- Touch Tool Button (Red initially)
+-- Touch Tool Button
 local toolButton = Instance.new("TextButton")
 toolButton.Size = UDim2.new(1, -20, 0, 35)
 toolButton.Position = UDim2.new(0, 10, 0, 120)
@@ -75,6 +75,18 @@ toolButton.Font = Enum.Font.SourceSansBold
 toolButton.TextSize = 18
 toolButton.Parent = frame
 Instance.new("UICorner", toolButton).CornerRadius = UDim.new(0, 10)
+
+-- Teleport Button
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(1, -20, 0, 35)
+teleportButton.Position = UDim2.new(0, 10, 0, 165)
+teleportButton.Text = "Teleport to Gudock"
+teleportButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+teleportButton.TextColor3 = Color3.new(1, 1, 1)
+teleportButton.Font = Enum.Font.SourceSansBold
+teleportButton.TextSize = 18
+teleportButton.Parent = frame
+Instance.new("UICorner", teleportButton).CornerRadius = UDim.new(0, 10)
 
 -- Touch Simulation Function
 local function touchPartAsync(part)
@@ -142,34 +154,41 @@ game:GetService("RunService").RenderStepped:Connect(function()
 	end
 end)
 
--- Tool logic (give/remove + color effect)
+-- Touch Tool Logic
 toolButton.MouseButton1Click:Connect(function()
-	-- Button click color effect
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	local existingTool = backpack and backpack:FindFirstChild("Fire Part") or player.Character and player.Character:FindFirstChild("Fire Part")
+
+	-- Flash green
 	toolButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
 	task.delay(0.1, function()
-		if toolButton then
-			toolButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-		end
+		toolButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 	end)
 
-	local backpack = player:FindFirstChildOfClass("Backpack")
-	local existingTool = backpack and backpack:FindFirstChild("Fire Part")
-
+	-- Toggle tool
 	if existingTool then
 		existingTool:Destroy()
 	else
 		local tool = Instance.new("Tool")
 		tool.RequiresHandle = false
 		tool.Name = "Fire Part"
-		tool.Parent = backpack
-
+		tool.Parent = player.Backpack
 		tool.Activated:Connect(function()
 			local mouse = player:GetMouse()
-			local target = mouse.Target
-			if target then
-				touchPartAsync(target)
+			if mouse and mouse.Target then
+				touchPartAsync(mouse.Target)
 			end
 		end)
+	end
+end)
+
+-- Teleport Logic
+teleportButton.MouseButton1Click:Connect(function()
+	local gudockPart = workspace:FindFirstChild("Gudock")
+	if gudockPart then
+		player.Character:MoveTo(gudockPart.Position + Vector3.new(0, 5, 0)) -- Adding some height to prevent collision
+	else
+		print("Gudock part not found!")
 	end
 end)
 
@@ -190,7 +209,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	toggleButton.Text = shown and "Hide GUI" or "Show GUI"
 end)
 
--- FOLLOW the Frame Always
+-- FOLLOW the Frame Always (REAL TIME)
 game:GetService("RunService").RenderStepped:Connect(function()
 	local framePosition = frame.Position
 	local frameSize = frame.Size
