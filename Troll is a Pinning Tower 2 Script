@@ -7,8 +7,8 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- Draggable Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 220)
-frame.Position = UDim2.new(0.5, -110, 0.5, -110)
+frame.Size = UDim2.new(0, 220, 0, 260)
+frame.Position = UDim2.new(0.5, -110, 0.5, -130)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -16,7 +16,7 @@ frame.Draggable = true
 frame.Parent = screenGui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
--- Toggle Button (outside the frame, close above)
+-- Toggle Button
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 30)
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -27,12 +27,12 @@ toggleButton.TextSize = 16
 toggleButton.Parent = screenGui
 Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 6)
 
--- Label Info
+-- Info Label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, -10, 0, 20)
 infoLabel.Position = UDim2.new(0, 5, 0, 5)
 infoLabel.BackgroundTransparency = 1
-infoLabel.Text = "(⚠️Only Works in Troll is a Pinning Tower 2⚠️)"
+infoLabel.Text = "(⚠️Only Works in Troll is a Pinning Tower 2 ⚠️)"
 infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 infoLabel.TextSize = 11
 infoLabel.Font = Enum.Font.SourceSansBold
@@ -64,7 +64,7 @@ airButton.TextSize = 18
 airButton.Parent = frame
 Instance.new("UICorner", airButton).CornerRadius = UDim.new(0, 10)
 
--- Touch Tool Button
+-- Tool Button
 local toolButton = Instance.new("TextButton")
 toolButton.Size = UDim2.new(1, -20, 0, 35)
 toolButton.Position = UDim2.new(0, 10, 0, 120)
@@ -87,6 +87,18 @@ teleportButton.Font = Enum.Font.SourceSansBold
 teleportButton.TextSize = 18
 teleportButton.Parent = frame
 Instance.new("UICorner", teleportButton).CornerRadius = UDim.new(0, 10)
+
+-- Fly GUI Button
+local flyButton = Instance.new("TextButton")
+flyButton.Size = UDim2.new(1, -20, 0, 35)
+flyButton.Position = UDim2.new(0, 10, 0, 210)
+flyButton.Text = "Fly GUI Script"
+flyButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+flyButton.TextColor3 = Color3.new(1, 1, 1)
+flyButton.Font = Enum.Font.SourceSansBold
+flyButton.TextSize = 18
+flyButton.Parent = frame
+Instance.new("UICorner", flyButton).CornerRadius = UDim.new(0, 10)
 
 -- Touch Simulation Function
 local function touchPartAsync(part)
@@ -150,22 +162,20 @@ end)
 game:GetService("RunService").RenderStepped:Connect(function()
 	if walkOnAir and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 		local hrp = player.Character.HumanoidRootPart
-		airPart.Position = (hrp.Position - Vector3.new(0, 3.5, 0))
+		airPart.Position = hrp.Position - Vector3.new(0, 3.5, 0)
 	end
 end)
 
--- Touch Tool Logic
+-- Tool Logic
 toolButton.MouseButton1Click:Connect(function()
 	local backpack = player:FindFirstChildOfClass("Backpack")
 	local existingTool = backpack and backpack:FindFirstChild("Fire Part") or player.Character and player.Character:FindFirstChild("Fire Part")
 
-	-- Flash green
 	toolButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
 	task.delay(0.1, function()
 		toolButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 	end)
 
-	-- Toggle tool
 	if existingTool then
 		existingTool:Destroy()
 	else
@@ -186,13 +196,20 @@ end)
 teleportButton.MouseButton1Click:Connect(function()
 	local gudockPart = workspace:FindFirstChild("Gudock")
 	if gudockPart then
-		player.Character:MoveTo(gudockPart.Position + Vector3.new(0, 5, 0)) -- Adding some height to prevent collision
+		player.Character:MoveTo(gudockPart.Position + Vector3.new(0, 5, 0))
 	else
 		print("Gudock part not found!")
 	end
 end)
 
--- Send Notification
+-- Fly GUI Script Execution
+flyButton.MouseButton1Click:Connect(function()
+	pcall(function()
+		loadstring(game:HttpGet("https://pastebin.com/raw/Y1G9RJgE"))()
+	end)
+end)
+
+-- Notification
 pcall(function()
 	game:GetService("StarterGui"):SetCore("SendNotification", {
 		Title = "Script Loaded!🔥",
@@ -201,7 +218,7 @@ pcall(function()
 	})
 end)
 
--- Toggle Button Logic (Hide/Show frame)
+-- Toggle GUI Visibility
 local shown = true
 toggleButton.MouseButton1Click:Connect(function()
 	shown = not shown
@@ -209,7 +226,7 @@ toggleButton.MouseButton1Click:Connect(function()
 	toggleButton.Text = shown and "Hide GUI" or "Show GUI"
 end)
 
--- FOLLOW the Frame Always (REAL TIME)
+-- Keep Toggle Button Above Frame
 game:GetService("RunService").RenderStepped:Connect(function()
 	local framePosition = frame.Position
 	local frameSize = frame.Size
